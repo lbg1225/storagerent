@@ -329,7 +329,7 @@
               kind: Service
               metadata:
                 name: gateway
-                namespace: airbnb
+                namespace: storagerent
                 labels:
                   app: gateway
               spec:
@@ -353,7 +353,7 @@
            
             ```
             Service  및 엔드포인트 확인 
-            kubectl get svc -n airbnb           
+            kubectl get svc -n storagerent           
             ```                 
 ![image](https://user-images.githubusercontent.com/80744273/119318358-2a046b80-bcb4-11eb-9d46-ef2d498c2cff.png)
 
@@ -391,7 +391,7 @@
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 storage 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 현실에서 발생가는한 이벤트에 의하여 마이크로 서비스들이 상호 작용하기 좋은 모델링으로 구현을 하였다.
 
 ```
-package airbnb;
+package storagerent;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
@@ -401,60 +401,95 @@ import org.springframework.beans.BeanUtils;
 public class Storage {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long storageId;       // 창고ID
-    private String status;     // 창고 상태
-    private String desc;       // 창고 상세 설명
-    private Long reviewCnt;    // 리뷰 건수
-    private String lastAction; // 최종 작업
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long storageId;
+    private String storageStatus;
+    private String description;
+    private Long reviewCnt;
+    private String lastAction;
+    private Float price;
 
-    public Long getStorageId() {
-        return StorageId;
+    @PostPersist
+    public void onPostPersist(){
+        StorageRegistered storageRegistered = new StorageRegistered();
+        BeanUtils.copyProperties(this, storageRegistered);
+        storageRegistered.publishAfterCommit();
     }
 
+    @PostUpdate
+    public void onPostUpdate(){
+        if("modify".equals(lastAction) || "review".equals(lastAction)) {
+            StorageModified storageModified = new StorageModified();
+            BeanUtils.copyProperties(this, storageModified);
+            storageModified.publishAfterCommit();
+        }
+        if("reserved".equals(lastAction)) {
+            StorageReserved storageReserved = new StorageReserved();
+            BeanUtils.copyProperties(this, storageReserved);
+            storageReserved.publishAfterCommit();
+        }
+        if("cancelled".equals(lastAction)) {
+            StorageCancelled storageCancelled = new StorageCancelled();
+            BeanUtils.copyProperties(this, storageCancelled);
+            storageCancelled.publishAfterCommit();
+        }
+    }
+
+    @PreRemove
+    public void onPreRemove(){
+        StorageDeleted storageDeleted = new StorageDeleted();
+        BeanUtils.copyProperties(this, storageDeleted);
+        storageDeleted.publishAfterCommit();
+    }
+    public Long getStorageId() {
+        return storageId;
+    }
     public void setStorageId(Long storageId) {
         this.storageId = storageId;
     }
-    public String getStatus() {
-        return status;
+    public String getStorageStatus() {
+        return storageStatus;
     }
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStorageStatus(String storageStatus) {
+        this.storageStatus = storageStatus;
     }
-    public String getDesc() {
-        return desc;
+    public String getDescription() {
+        return description;
     }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescription(String description) {
+        this.description = description;
     }
     public Long getReviewCnt() {
         return reviewCnt;
     }
-
     public void setReviewCnt(Long reviewCnt) {
         this.reviewCnt = reviewCnt;
     }
     public String getLastAction() {
         return lastAction;
     }
-
     public void setLastAction(String lastAction) {
         this.lastAction = lastAction;
     }
+    public Float getPrice() {
+        return price;
+    }
+    public void setPrice(Float price) {
+        this.price = price;
+    }
 }
+
 
 ```
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 ```
-package airbnb;
+package storagerent;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 @RepositoryRestResource(collectionResourceRel="storages", path="storages")
-public interface StorageRepository extends PagingAndSortingRepository<Room, Long>{
+public interface StorageRepository extends PagingAndSortingRepository<Storage, Long>{
 
 }
 ```
@@ -480,7 +515,7 @@ http GET http://localhost:8088/reservations
 ```
 # PaymentService.java
 
-package airbnb.external;
+package storagerent.external;
 
 <import문 생략>
 
@@ -494,7 +529,7 @@ public interface PaymentService {
 
 # StorageService.java
 
-package airbnb.external;
+package storagerent.external;
 
 <import문 생략>
 
@@ -525,7 +560,7 @@ public interface StorageService {
         ////////////////////////////////////
 
         // 해당 Storage가 Available한 상태인지 체크
-        boolean result = ReservationApplication.applicationContext.getBean(airbnb.external.RoomService.class)
+        boolean result = ReservationApplication.applicationContext.getBean(storagerent.external.StorageService.class)
                         .chkAndReqReserve(this.getRoomId());
         System.out.println("######## Check Result : " + result);
 
@@ -536,11 +571,11 @@ public interface StorageService {
             //////////////////////////////
             // PAYMENT 결제 진행 (POST방식) - SYNC 호출
             //////////////////////////////
-            airbnb.external.Payment payment = new airbnb.external.Payment();
-            payment.setRsvId(this.getRsvId());
-            payment.setRoomId(this.getRoomId());
+            storagerent.external.Payment payment = new storagerent.external.Payment();
+            payment.setRsvId(this.getReservationId());
+            payment.setRoomId(this.getStorageId());
             payment.setStatus("paid");
-            ReservationApplication.applicationContext.getBean(airbnb.external.PaymentService.class)
+            ReservationApplication.applicationContext.getBean(storagerent.external.PaymentService.class)
                 .approvePayment(payment);
 
             /////////////////////////////////////
