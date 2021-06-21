@@ -136,10 +136,10 @@
 
 
 ### 부적격 이벤트 탈락
-![image](https://user-images.githubusercontent.com/15603058/119298594-4f837c00-bc98-11eb-9f67-ec2e882e1f33.png)
+![image](https://user-images.githubusercontent.com/84304023/122713329-7e454000-d2a0-11eb-807c-f96b54a2aa37.png)
 
     - 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
-        - 등록시>StorageSearched, 예약시>StorageSelected :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
+        - 등록시>StorageSelected, 예약시>Resevationindormed :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
 
 ### 액터, 커맨드 부착하여 읽기 좋게
 ![image](https://user-images.githubusercontent.com/15603058/119298993-113a8c80-bc99-11eb-9bae-4b911317d810.png)
