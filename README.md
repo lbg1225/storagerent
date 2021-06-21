@@ -145,7 +145,8 @@
 ![image](https://user-images.githubusercontent.com/84304023/122713526-c6646280-d2a0-11eb-97d3-04d04314ccde.png)
 
 ### 어그리게잇으로 묶기
-![image](https://user-images.githubusercontent.com/84304023/122713834-45f23180-d2a1-11eb-8cdf-2ae99f70cdce.png)
+![image](https://user-images.githubusercontent.com/84304023/122714889-0a586700-d2a3-11eb-88e3-af7d4a8ee84c.png)
+
 
     - 창고(Storage), 예약(Reservation), 결제(Payment), 리뷰(Review) 은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
 
