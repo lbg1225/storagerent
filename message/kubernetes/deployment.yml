@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: message
+  namespace: storagerent
   labels:
     app: message
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: message
-          image: username/message:latest
+          image: 740569282574.dkr.ecr.ap-northeast-1.amazonaws.com/message:v1
           ports:
             - containerPort: 8080
           readinessProbe:

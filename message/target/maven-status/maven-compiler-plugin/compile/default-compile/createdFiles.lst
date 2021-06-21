@@ -1,10 +1,14 @@
 storagerent\PolicyHandler.class
-storagerent\ReservationConfirmed.class
 storagerent\ReservationCancelled.class
-storagerent\MessageApplication.class
 storagerent\AbstractEvent$1.class
 storagerent\AbstractEvent.class
 storagerent\config\kafka\KafkaProcessor.class
-storagerent\MessageRepository.class
+storagerent\fallback\StorageServiceFallBackFactory.class
 storagerent\Message.class
+storagerent\external\StorageService.class
+storagerent\ReservationConfirmed.class
+storagerent\config\HttpConfiguration.class
+storagerent\fallback\StorageServiceFallBackFactory$1.class
+storagerent\MessageApplication.class
+storagerent\MessageRepository.class
 storagerent\MessageController.class

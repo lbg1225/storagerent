@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: storage
+  namespace: storagerent
   labels:
     app: storage
 spec:
