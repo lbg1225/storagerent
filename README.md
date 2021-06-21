@@ -138,7 +138,7 @@
 ![image](https://user-images.githubusercontent.com/15603058/119298594-4f837c00-bc98-11eb-9f67-ec2e882e1f33.png)
 
     - 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
-        - 등록시>RoomSearched, 예약시>RoomSelected :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
+        - 등록시>StorageSearched, 예약시>StorageSelected :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
 
 ### 액터, 커맨드 부착하여 읽기 좋게
 ![image](https://user-images.githubusercontent.com/15603058/119298993-113a8c80-bc99-11eb-9bae-4b911317d810.png)
@@ -146,14 +146,14 @@
 ### 어그리게잇으로 묶기
 ![image](https://user-images.githubusercontent.com/15603058/119299589-2663eb00-bc9a-11eb-83b9-de7f3efe7548.png)
 
-    - Room, Reservation, Payment, Review 은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
+    - Storage, Reservation, Payment, Review 은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
 
 ### 바운디드 컨텍스트로 묶기
 
 ![image](https://user-images.githubusercontent.com/15603058/119300858-6c21b300-bc9c-11eb-9b3f-c85aff51658f.png)
 
     - 도메인 서열 분리 
-        - Core Domain:  reservation, room : 없어서는 안될 핵심 서비스이며, 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 reservation 의 경우 1주일 1회 미만, room 의 경우 1개월 1회 미만
+        - Core Domain:  reservation, storage : 없어서는 안될 핵심 서비스이며, 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 reservation 의 경우 1주일 1회 미만, storage 의 경우 1개월 1회 미만
         - Supporting Domain:   message, viewpage : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
         - General Domain:   payment : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 
 
@@ -196,7 +196,7 @@
 
 - 마이크로 서비스를 넘나드는 시나리오에 대한 트랜잭션 처리
 - 고객 예약시 결제처리:  결제가 완료되지 않은 예약은 절대 받지 않는다고 결정하여, ACID 트랜잭션 적용. 예약 완료시 사전에 창고 상태를 확인하는 것과 결제처리에 대해서는 Request-Response 방식 처리
-- 결제 완료시 Host 연결 및 예약처리:  reservation 에서 room 마이크로서비스로 예약요청이 전달되는 과정에 있어서 room 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.
+- 결제 완료시 Host 연결 및 예약처리:  reservation 에서 storage 마이크로서비스로 예약요청이 전달되는 과정에 있어서 storage 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.
 - 나머지 모든 inter-microservice 트랜잭션: 예약상태, 후기처리 등 모든 이벤트에 대해 데이터 일관성의 시점이 크리티컬하지 않은 모든 경우가 대부분이라 판단, Eventual Consistency 를 기본으로 채택함.
 
 
@@ -246,10 +246,10 @@
                       uri: http://payment:8080
                       predicates:
                         - Path=/payments/** 
-                    - id: room
-                      uri: http://room:8080
+                    - id: storage
+                      uri: http://storage:8080
                       predicates:
-                        - Path=/rooms/**, /reviews/**, /check/**
+                        - Path=/storage/**, /reviews/**, /check/**
                     - id: reservation
                       uri: http://reservation:8080
                       predicates:
@@ -261,7 +261,7 @@
                     - id: viewpage
                       uri: http://viewpage:8080
                       predicates:
-                        - Path= /roomviews/**
+                        - Path= /storageviews/**
                   globalcors:
                     corsConfigurations:
                       '[/**]':
@@ -393,23 +393,23 @@ import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 
 @Entity
-@Table(name="Room_table")
-public class Room {
+@Table(name="Storage_table")
+public class Storage {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long roomId;       // 방ID
-    private String status;     // 방 상태
-    private String desc;       // 방 상세 설명
+    private Long storageId;       // 창고ID
+    private String status;     // 창고 상태
+    private String desc;       // 창고 상세 설명
     private Long reviewCnt;    // 리뷰 건수
     private String lastAction; // 최종 작업
 
-    public Long getRoomId() {
-        return roomId;
+    public Long getStorageId() {
+        return StorageId;
     }
 
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
+    public void setStorageId(Long storageId) {
+        this.storageId = storageId;
     }
     public String getStatus() {
         return status;
@@ -449,18 +449,18 @@ package airbnb;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel="rooms", path="rooms")
-public interface RoomRepository extends PagingAndSortingRepository<Room, Long>{
+@RepositoryRestResource(collectionResourceRel="storages", path="storages")
+public interface StorageRepository extends PagingAndSortingRepository<Room, Long>{
 
 }
 ```
 - 적용 후 REST API 의 테스트
 ```
-# room 서비스의 room 등록
-http POST http://localhost:8088/rooms desc="Beautiful House"  
+# storage 서비스의 storage 등록
+http POST http://localhost:8088/storages desc="Beautiful House"  
 
 # reservation 서비스의 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve
+http POST http://localhost:8088/reservations storageId=1 status=reqReserve
 
 # reservation 서비스의 예약 상태 확인
 http GET http://localhost:8088/reservations
@@ -480,7 +480,7 @@ package airbnb.external;
 
 <import문 생략>
 
-@FeignClient(name="Payment", url="${prop.room.url}")
+@FeignClient(name="Payment", url="${prop.storage.url}")
 public interface PaymentService {
 
     @RequestMapping(method= RequestMethod.POST, path="/payments")
@@ -488,17 +488,17 @@ public interface PaymentService {
 
 }
 
-# RoomService.java
+# StorageService.java
 
 package airbnb.external;
 
 <import문 생략>
 
-@FeignClient(name="Room", url="${prop.room.url}")
-public interface RoomService {
+@FeignClient(name="Storage", url="${prop.storage.url}")
+public interface StorageService {
 
     @RequestMapping(method= RequestMethod.GET, path="/check/chkAndReqReserve")
-    public boolean chkAndReqReserve(@RequestParam("roomId") long roomId);
+    public boolean chkAndReqReserve(@RequestParam("storageId") long storageId);
 
 }
 
@@ -520,7 +520,7 @@ public interface RoomService {
         // 예약 요청(reqReserve) 들어온 경우
         ////////////////////////////////////
 
-        // 해당 ROOM이 Available한 상태인지 체크
+        // 해당 Storage가 Available한 상태인지 체크
         boolean result = ReservationApplication.applicationContext.getBean(airbnb.external.RoomService.class)
                         .chkAndReqReserve(this.getRoomId());
         System.out.println("######## Check Result : " + result);
@@ -556,14 +556,14 @@ public interface RoomService {
 # 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
 
 # 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Fail
+http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Fail
 
 # 결제서비스 재기동
 cd payment
 mvn spring-boot:run
 
 # 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Success
+http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Success
 ```
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
@@ -644,7 +644,7 @@ package airbnb;
 # 메시지 서비스 (message) 를 잠시 내려놓음 (ctrl+c)
 
 # 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Success
+http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Success
 
 # 예약 상태 확인
 http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예약 상태는 정상 확인
@@ -677,7 +677,7 @@ kubectl -n kube-system describe secret eks-admin-token-rjpmq
 ![codebuild(token)](https://user-images.githubusercontent.com/38099203/119293511-84d69c80-bc8d-11eb-99c7-e8929e6a41e4.PNG)
 ```
 buildspec.yml 파일 
-마이크로 서비스 room의 yml 파일 이용하도록 세팅
+마이크로 서비스 storage의 yml 파일 이용하도록 세팅
 ```
 ![codebuild(buildspec)](https://user-images.githubusercontent.com/38099203/119283849-30292680-bc79-11eb-9f86-cbb715e74846.PNG)
 
@@ -712,10 +712,10 @@ codebuild 프로젝트 및 빌드 이력
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: dr-room
+  name: dr-storage
   namespace: airbnb
 spec:
-  host: room
+  host: storage
   trafficPolicy:
     connectionPool:
       http:
@@ -752,28 +752,28 @@ kubectl exec -it siege -c siege -n airbnb -- /bin/bash
 
 - 동시사용자 1로 부하 생성 시 모두 정상
 ```
-siege -c1 -t10S -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
 The server is now under siege...
-HTTP/1.1 201     0.49 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.05 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     256 bytes ==> POST http://room:8080/rooms
+HTTP/1.1 201     0.49 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.05 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     256 bytes ==> POST http://storage:8080/storages
 ```
 
 - 동시사용자 2로 부하 생성 시 503 에러 168개 발생
 ```
-siege -c2 -t10S -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c2 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 
 ** SIEGE 4.0.4
 ** Preparing 2 concurrent users for battle.
@@ -869,22 +869,22 @@ Shortest transaction:           0.00
 ### 오토스케일 아웃
 앞서 CB 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다. 
 
-- room deployment.yml 파일에 resources 설정을 추가한다
+- storage deployment.yml 파일에 resources 설정을 추가한다
 ![Autoscale (HPA)](https://user-images.githubusercontent.com/38099203/119283787-0a038680-bc79-11eb-8d9b-d8aed8847fef.PNG)
 
-- room 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다:
+- storage 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deployment room -n airbnb --cpu-percent=50 --min=1 --max=10
+kubectl autoscale deployment storage -n airbnb --cpu-percent=50 --min=1 --max=10
 ```
 ![Autoscale (HPA)(kubectl autoscale 명령어)](https://user-images.githubusercontent.com/38099203/119299474-ec92e480-bc99-11eb-9bc3-8c5246b02783.PNG)
 
 - 부하를 동시사용자 100명, 1분 동안 걸어준다.
 ```
-siege -c100 -t60S -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 ```
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 ```
-kubectl get deploy room -w -n airbnb 
+kubectl get deploy storage -w -n airbnb 
 ```
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ![Autoscale (HPA)(모니터링)](https://user-images.githubusercontent.com/38099203/119299704-6a56f000-bc9a-11eb-9ba8-55e5978f3739.PNG)
@@ -911,14 +911,14 @@ Shortest transaction:           0.01
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
 
 ```
-kubectl delete destinationrules dr-room -n airbnb
+kubectl delete destinationrules dr-storage -n airbnb
 kubectl label namespace airbnb istio-injection-
-kubectl delete hpa room -n airbnb
+kubectl delete hpa storage -n airbnb
 ```
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
@@ -942,7 +942,7 @@ kubectl set image ...
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 
 
 Transactions:                   7732 hits
@@ -993,7 +993,7 @@ Shortest transaction:           0.00
 
 
 # Self-healing (Liveness Probe)
-- room deployment.yml 파일 수정 
+- storage deployment.yml 파일 수정 
 ```
 콘테이너 실행 후 /tmp/healthy 파일을 만들고 
 90초 후 삭제
@@ -1001,7 +1001,7 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 ```
 ![deployment yml tmp healthy](https://user-images.githubusercontent.com/38099203/119318677-8ff0f300-bcb4-11eb-950a-e3c15feed325.PNG)
 
-- kubectl describe pod room -n airbnb 실행으로 확인
+- kubectl describe pod storage -n airbnb 실행으로 확인
 ```
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
@@ -1197,7 +1197,7 @@ NAME      STATUS   VOLUME                                     CAPACITY   ACCESS 
 aws-efs   Bound    pvc-43f6fe12-b9f3-400c-ba20-b357c1639f00   6Ki        RWX            aws-efs        4m44s
 ```
 
-6. room pod 적용
+6. storage pod 적용
 ```
 kubectl apply -f deployment.yml
 ```
@@ -1208,19 +1208,19 @@ kubectl apply -f deployment.yml
 ```
 NAME                              READY   STATUS    RESTARTS   AGE
 efs-provisioner-f4f7b5d64-lt7rz   1/1     Running   0          14m
-room-5df66d6674-n6b7n             1/1     Running   0          109s
-room-5df66d6674-pl25l             1/1     Running   0          109s
+storage-5df66d6674-n6b7n             1/1     Running   0          109s
+storage-5df66d6674-pl25l             1/1     Running   0          109s
 siege                             1/1     Running   0          2d1h
 
 
-kubectl exec -it pod/room-5df66d6674-n6b7n room -n airbnb -- /bin/sh
+kubectl exec -it pod/storage-5df66d6674-n6b7n storage -n airbnb -- /bin/sh
 / # cd /mnt/aws
 /mnt/aws # touch intensive_course_work
 ```
 ![a pod에서 파일생성](https://user-images.githubusercontent.com/38099203/119372712-9736f180-bcf2-11eb-8e57-1d6e3f4273a5.PNG)
 
 ```
-kubectl exec -it pod/room-5df66d6674-pl25l room -n airbnb -- /bin/sh
+kubectl exec -it pod/storage-5df66d6674-pl25l storage -n airbnb -- /bin/sh
 / # cd /mnt/aws
 /mnt/aws # ls -al
 total 8
