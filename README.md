@@ -115,7 +115,8 @@
 
 
 ## TO-BE 조직 (Vertically-Aligned)  
-  ![image](https://user-images.githubusercontent.com/86210580/122708827-03782700-d298-11eb-8ef6-376b062b8f88.png)
+ ![image](https://user-images.githubusercontent.com/86210580/122709071-7b465180-d298-11eb-82ba-27b41736326f.png)
+
 
 
 ## Event Storming 결과
