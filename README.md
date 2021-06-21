@@ -175,7 +175,8 @@
 
 ### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 
-![image](https://user-images.githubusercontent.com/15603058/119306321-f110ca80-bca4-11eb-804c-a965220bad61.png)
+![image](https://user-images.githubusercontent.com/86210580/122716388-2826cb80-d2a5-11eb-937f-60958e97994a.png)
+
 
     - 관리자가 임대할 창고를 등록/수정/삭제한다.(ok)
     - 고객이 창고를 선택하여 예약한다.(ok)
