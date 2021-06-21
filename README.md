@@ -498,14 +498,14 @@ public interface StorageRepository extends PagingAndSortingRepository<Storage, L
 ```
 - 적용 후 REST API 의 테스트
 ```
-# storage 서비스의 storage 등록
+# storage 서비스의 대여창고 등록
 http POST http://localhost:8088/storages description="storage1" price=200000 storageStatus="available"
   
-# reservation 서비스의 예약 요청
-http POST localhost:8088/reservations storageId=1 price=200000
+# reservation 서비스의 창고 예약 요청
+http POST http:localhost:8088/reservations storageId=1 price=200000
 
 # reservation 서비스의 예약 상태 확인
-http GET http://localhost:8088/reservations
+http GET http://localhost:8088/reservations/1
 
 ```
 
@@ -522,12 +522,10 @@ package storagerent.external;
 
 <import문 생략>
 
-@FeignClient(name="Payment", url="${prop.storage.url}")
+@FeignClient(name="payment", url="${prop.payment.url}")
 public interface PaymentService {
-
     @RequestMapping(method= RequestMethod.POST, path="/payments")
     public void approvePayment(@RequestBody Payment payment);
-
 }
 
 # StorageService.java
@@ -539,11 +537,9 @@ package storagerent.external;
 @FeignClient(name="Storage", url="${prop.storage.url}")
 public interface StorageService {
 
-    @RequestMapping(method= RequestMethod.GET, path="/check/chkAndReqReserve")
+    @RequestMapping(method=RequestMethod.GET, path="/check/chkAndReqReserve")
     public boolean chkAndReqReserve(@RequestParam("storageId") long storageId);
-
 }
-
 
 ```
 
@@ -553,37 +549,33 @@ public interface StorageService {
 
     @PostPersist
     public void onPostPersist(){
-
-        ////////////////////////////////
-        // RESERVATION에 INSERT 된 경우 
-        ////////////////////////////////
-
-        ////////////////////////////////////
-        // 예약 요청(reqReserve) 들어온 경우
-        ////////////////////////////////////
+    
+        //------------------
+        // 예약이 들어온 경우
+        //------------------
 
         // 해당 Storage가 Available한 상태인지 체크
-        boolean result = ReservationApplication.applicationContext.getBean(storagerent.external.StorageService.class)
-                        .chkAndReqReserve(this.getRoomId());
-        System.out.println("######## Check Result : " + result);
-
+       boolean result = ReservationApplication.applicationContext.getBean(storagerent.external.StorageService.class).chkAndReqReserve(this.getStorageId());
+        System.out.println("######## Storage Available Check Result : " + result);
+        
         if(result) { 
 
             // 예약 가능한 상태인 경우(Available)
 
-            //////////////////////////////
-            // PAYMENT 결제 진행 (POST방식) - SYNC 호출
-            //////////////////////////////
+            //----------------------------
+            // PAYMENT 결제 진행 (POST방식)
+            //----------------------------
             storagerent.external.Payment payment = new storagerent.external.Payment();
-            payment.setRsvId(this.getReservationId());
-            payment.setRoomId(this.getStorageId());
-            payment.setStatus("paid");
+            payment.setReservationId(this.getReservationId());
+            payment.setStorageId(this.getStorageId());
+            payment.setPaymentStatus("paid");
+            payment.setPrice(this.price);
             ReservationApplication.applicationContext.getBean(storagerent.external.PaymentService.class)
                 .approvePayment(payment);
 
-            /////////////////////////////////////
+            //----------------------------------
             // 이벤트 발행 --> ReservationCreated
-            /////////////////////////////////////
+            //----------------------------------
             ReservationCreated reservationCreated = new ReservationCreated();
             BeanUtils.copyProperties(this, reservationCreated);
             reservationCreated.publishAfterCommit();
@@ -597,15 +589,17 @@ public interface StorageService {
 ```
 # 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
 
-# 예약 요청
-http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Fail
+# 대여창고 등록
+http POST http://localhost:8088/storages description="storage1" price=200000 storageStatus="available"
 
-# 결제서비스 재기동
-cd payment
-mvn spring-boot:run
+# Payment 서비스 종료 후 창고대여
+http POST localhost:8088/reservations storageId=1 price=200000 reservationStatus="reqReserve"
 
-# 예약 요청
-http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Success
+# Payment 서비스 실행 후 창고대여
+http POST localhost:8088/reservations storageId=4 price=200000 reservationStatus="reqReserve"
+
+# 창고대여 확인 
+http GET http://localhost:8088/reservations/4  
 ```
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
@@ -685,11 +679,14 @@ package storagerent;
 ```
 # 메시지 서비스 (message) 를 잠시 내려놓음 (ctrl+c)
 
-# 예약 요청
-http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Success
+# 대여창고 등록
+http POST http://localhost:8088/storages description="msg1" price=200000 storageStatus="available"
 
-# 예약 상태 확인
-http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예약 상태는 정상 확인
+# Message 서비스 종료 후 창고대여
+http POST localhost:8088/reservations storageId=5 price=200000 reservationStatus="reqReserve"   
+
+# Message 서비스와 상관없이 창고대여 성공여부 확인
+http GET http://localhost:8088/reservations/2
 
 ```
 
