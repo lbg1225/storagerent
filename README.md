@@ -40,7 +40,6 @@
 7. 고객이 대여한 정보 및 예약상태 등을 한 화면에서 확인할 수 있다. (viewpage)
 8. 고객이 예약했던 창고에 대해 후기를 남길 수 있다. 
 
-
 비기능적 요구사항
 1. 트랜잭션
     1. 결제가 되지 않은 예약 건은 성립되지 않아야 한다.  (Sync 호출)
@@ -194,8 +193,7 @@
 
 ## 헥사고날 아키텍처 다이어그램 도출
 
-![image](https://user-images.githubusercontent.com/80744273/119319091-fc6bf200-bcb4-11eb-9dac-0995c84a82e0.png)
-
+![image](https://user-images.githubusercontent.com/84304043/122707112-4d5f0e00-d294-11eb-8157-0b102dfad907.png)
 
     - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
     - 호출관계에서 PubSub 과 Req/Resp 를 구분함
