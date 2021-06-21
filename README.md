@@ -234,6 +234,7 @@
  ![image](https://user-images.githubusercontent.com/84304043/122714566-71c1e700-d2a2-11eb-92e9-51ef24aa46ae.png)
  
 - 실제로 view 페이지를 조회해 보면 모든 storage에 대한 전반적인 예약 상태, 결제 상태, 리뷰 건수 등의 정보를 종합적으로 알 수 있다
+
   ![image](https://user-images.githubusercontent.com/31723044/119357063-1b34ad80-bce2-11eb-94fb-a587261ab56f.png)
 
 
@@ -288,28 +289,28 @@
           
 
             ```
-            apiVersion: apps/v1
-            kind: Deployment
-            metadata:
-              name: gateway
-              namespace: airbnb
-              labels:
-                app: gateway
-            spec:
-              replicas: 1
-              selector:
-                matchLabels:
-                  app: gateway
-              template:
-                metadata:
-                  labels:
-                    app: gateway
-                spec:
-                  containers:
-                    - name: gateway
-                      image: 247785678011.dkr.ecr.us-east-2.amazonaws.com/gateway:1.0
-                      ports:
-                        - containerPort: 8080
+	apiVersion: apps/v1
+	kind: Deployment
+	metadata:
+	  name: gateway
+	  namespace: storagerent
+	  labels:
+	    app: gateway
+	spec:
+	  replicas: 1
+	  selector:
+	    matchLabels:
+	      app: gateway
+	  template:
+	    metadata:
+	      labels:
+		app: gateway
+	    spec:
+	      containers:
+		- name: gateway
+		  image: 740569282574.dkr.ecr.ap-northeast-1.amazonaws.com/user02-gateway:v1
+		  ports:
+		    - containerPort: 8080
             ```               
             
 
