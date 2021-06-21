@@ -357,8 +357,10 @@
             ```
             Service  및 엔드포인트 확인 
             kubectl get svc -n storagerent           
-            ```                 
-![image](https://user-images.githubusercontent.com/84304043/122748305-02122300-d2c7-11eb-8a36-a48614d50c1e.png)
+            ```                
+
+![image](https://user-images.githubusercontent.com/84304043/122770160-229aa700-d2e0-11eb-9f85-b6fcb8cabe0e.png)
+
 
 # Correlation
 
