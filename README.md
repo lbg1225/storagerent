@@ -504,7 +504,7 @@ public interface StorageRepository extends PagingAndSortingRepository<Storage, L
 http POST http://localhost:8088/storages description="storage1" price=200000 storageStatus="available"
   
 # reservation 서비스의 창고 예약 요청
-http POST http:localhost:8088/reservations storageId=1 price=200000
+http POST http:localhost:8088/reservations storageId=1 price=200000 reservationStatus="reqReserve"
 
 # reservation 서비스의 예약 상태 확인
 http GET http://localhost:8088/reservations/1
@@ -598,10 +598,10 @@ http POST http://localhost:8088/storages description="storage1" price=200000 sto
 http POST localhost:8088/reservations storageId=1 price=200000 reservationStatus="reqReserve"
 
 # Payment 서비스 실행 후 창고대여
-http POST localhost:8088/reservations storageId=4 price=200000 reservationStatus="reqReserve"
+http POST localhost:8088/reservations storageId=1 price=200000 reservationStatus="reqReserve"
 
 # 창고대여 확인 
-http GET http://localhost:8088/reservations/4  
+http GET http://localhost:8088/reservations/1  
 ```
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
