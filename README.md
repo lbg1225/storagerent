@@ -151,7 +151,7 @@
 
 ### 바운디드 컨텍스트로 묶기
 
-![image](https://user-images.githubusercontent.com/15603058/119300858-6c21b300-bc9c-11eb-9b3f-c85aff51658f.png)
+![image](https://user-images.githubusercontent.com/84304023/122714088-ba2cd500-d2a1-11eb-84a7-3880052ea6a7.png)
 
     - 도메인 서열 분리 
         - Core Domain:  reservation, storage : 없어서는 안될 핵심 서비스이며, 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 reservation 의 경우 1주일 1회 미만, storage 의 경우 1개월 1회 미만
