@@ -623,7 +623,7 @@ http POST http://localhost:8088/reservations storageId=1 status=reqReserve   #Su
 ```
 # Payment.java
 
-package airbnb;
+package storagerent;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
@@ -655,14 +655,14 @@ public class Payment {
 ```
 # Reservation.java
 
-package airbnb;
+package storagerent;
 
     @PostUpdate
     public void onPostUpdate(){
     
         ....
 
-        if(this.getStatus().equals("reserved")) {
+        if("reserved".equals(this.getReservationStatus())) {
 
             ////////////////////
             // 예약 확정된 경우
@@ -1071,7 +1071,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: efs-provisioner
-  namespace: airbnb
+  namespace: storagerent
 
 
 kubectl get ServiceAccount efs-provisioner -n airbnb
@@ -1082,14 +1082,14 @@ efs-provisioner   1         9m1s
   
 kubectl apply -f efs-rbac.yaml
 
-namespace를 반듯이 수정해야함
+namespace를 반드시 수정해야함
 
   
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: efs-provisioner-runner
-  namespace: airbnb
+  namespace: storagerent
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -1108,12 +1108,12 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: run-efs-provisioner
-  namespace: airbnb
+  namespace: storagerent
 subjects:
   - kind: ServiceAccount
     name: efs-provisioner
      # replace with namespace where provisioner is deployed
-    namespace: airbnb
+    namespace: storagerent
 roleRef:
   kind: ClusterRole
   name: efs-provisioner-runner
@@ -1123,7 +1123,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: leader-locking-efs-provisioner
-  namespace: airbnb
+  namespace: storagerent
 rules:
   - apiGroups: [""]
     resources: ["endpoints"]
@@ -1133,12 +1133,12 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: leader-locking-efs-provisioner
-  namespace: airbnb
+  namespace: storagerent
 subjects:
   - kind: ServiceAccount
     name: efs-provisioner
     # replace with namespace where provisioner is deployed
-    namespace: airbnb
+    namespace: storagerent
 roleRef:
   kind: Role
   name: leader-locking-efs-provisioner
@@ -1155,7 +1155,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: efs-provisioner
-  namespace: airbnb
+  namespace: storagerent
 spec:
   replicas: 1
   strategy:
@@ -1204,11 +1204,11 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: aws-efs
-  namespace: airbnb
+  namespace: storagerent
 provisioner: my-aws.com/aws-efs
 
 
-kubectl get sc aws-efs -n airbnb
+kubectl get sc aws-efs -n storagerent
 NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 aws-efs         my-aws.com/aws-efs      Delete          Immediate              false                  4s
 ```
@@ -1222,7 +1222,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: aws-efs
-  namespace: airbnb
+  namespace: storagerent
   labels:
     app: test-pvc
 spec:
@@ -1234,7 +1234,7 @@ spec:
   storageClassName: aws-efs
   
   
-kubectl get pvc aws-efs -n airbnb
+kubectl get pvc aws-efs -n storagerent
 NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 aws-efs   Bound    pvc-43f6fe12-b9f3-400c-ba20-b357c1639f00   6Ki        RWX            aws-efs        4m44s
 ```
@@ -1255,14 +1255,14 @@ storage-5df66d6674-pl25l             1/1     Running   0          109s
 siege                             1/1     Running   0          2d1h
 
 
-kubectl exec -it pod/storage-5df66d6674-n6b7n storage -n airbnb -- /bin/sh
+kubectl exec -it pod/storage-5df66d6674-n6b7n storage -n storagerent -- /bin/sh
 / # cd /mnt/aws
 /mnt/aws # touch intensive_course_work
 ```
 ![a pod에서 파일생성](https://user-images.githubusercontent.com/38099203/119372712-9736f180-bcf2-11eb-8e57-1d6e3f4273a5.PNG)
 
 ```
-kubectl exec -it pod/storage-5df66d6674-pl25l storage -n airbnb -- /bin/sh
+kubectl exec -it pod/storage-5df66d6674-pl25l storage -n storagerent -- /bin/sh
 / # cd /mnt/aws
 /mnt/aws # ls -al
 total 8
@@ -1283,8 +1283,8 @@ kubectl apply -f cofingmap.yml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: airbnb-config
-  namespace: airbnb
+  name: storagerent-config
+  namespace: storagerent
 data:
   # 단일 key-value
   max_reservation_per_person: "10"
@@ -1303,12 +1303,12 @@ kubectl apply -f deployment.yml
             - name: MAX_RESERVATION_PER_PERSION
               valueFrom:
                 configMapKeyRef:
-                  name: airbnb-config
+                  name: storagerent-config
                   key: max_reservation_per_person
            - name: UI_PROPERTIES_FILE_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: airbnb-config
+                  name: storagerent-config
                   key: ui_properties_file_name
           volumeMounts:
           - mountPath: "/mnt/aws"
