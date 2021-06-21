@@ -691,6 +691,9 @@ http POST localhost:8088/reservations storageId=5 price=200000 reservationStatus
 http GET http://localhost:8088/reservations/2
 
 ```
+## 폴리그랏 퍼시스턴스 적용
+
+## Maven 빌드시스템 라이브러리 추가( pom.xml 설정변경 H2DB  HSQLDB) 
 
 # 운영
 
