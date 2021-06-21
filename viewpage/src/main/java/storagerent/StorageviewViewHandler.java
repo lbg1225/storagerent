@@ -83,15 +83,17 @@ public class StorageviewViewHandler {
         try {
             if (!paymentApproved.validate()) return;
                 // view 객체 조회
-            List<Storageview> storageviewList = storageviewRepository.findByReservationId(paymentApproved.getReservationId());
-            for(Storageview storageview : storageviewList){
-                // view 객체에 이벤트의 eventDirectValue 를 set 함
-                storageview.setPaymentId(paymentApproved.getPaymentId());
-                storageview.setPaymentStatus(paymentApproved.getPaymentStatus());
-                // view 레파지 토리에 save
-                storageviewRepository.save(storageview);
+         
+            Optional<Storageview> storageviewOptional = storageviewRepository.findById(paymentApproved.getStorageId());
+           
+            if( storageviewOptional.isPresent()) {
+                 Storageview storageview = storageviewOptional.get();
+                 // view 객체에 이벤트의 eventDirectValue 를 set 함
+                 storageview.setPaymentId(paymentApproved.getPaymentId());
+                 storageview.setPaymentStatus(paymentApproved.getPaymentStatus());
+                 // view 레파지 토리에 save
+                 storageviewRepository.save(storageview);   
             }
-            
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -131,9 +133,48 @@ public class StorageviewViewHandler {
         }
     }
 
+    
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenStorageReserved_then_UPDATE_6(@Payload StorageReserved storageReserved) {
+    
+        try {
+            if (!storageReserved.validate()) return;
+    
+            Optional<Storageview> storageviewOptional = storageviewRepository.findById(storageReserved.getStorageId());
+            if( storageviewOptional.isPresent()) {
+                Storageview storageview = storageviewOptional.get();
+                storageview.setStorageStatus(storageReserved.getStorageStatus());
+                storageviewRepository.save(storageview);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenStorageCancelled_then_UPDATE_7(@Payload StorageCancelled storageCancelled) {
+    
+        try {
+            if (!storageCancelled.validate()) return;
+    
+            Optional<Storageview> storageviewOptional = storageviewRepository.findById(storageCancelled.getStorageId());
+            if( storageviewOptional.isPresent()) {
+                Storageview storageview = storageviewOptional.get();
+                storageview.setStorageStatus(storageCancelled.getStorageStatus());
+                storageviewRepository.save(storageview);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     @StreamListener(KafkaProcessor.INPUT)
     public void whenStorageDeleted_then_DELETE_1(@Payload StorageDeleted storageDeleted) {
         try {
+            if (!storageDeleted.validate()) return;
+
             if (!storageDeleted.validate()) return;
             // view 레파지 토리에 삭제 쿼리
             storageviewRepository.deleteById(storageDeleted.getStorageId());

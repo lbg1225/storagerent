@@ -48,23 +48,23 @@ spring:
     gateway:
       routes:
         - id: payment
-          uri: http://payment:8081
+          uri: http://payment:8080
           predicates:
             - Path=/payments/** 
         - id: storage
-          uri: http://storage:8082
+          uri: http://storage:8080
           predicates:
             - Path=/storages/**, /reviews/**, /check/**
         - id: reservation
-          uri: http://reservation:8083
+          uri: http://reservation:8080
           predicates:
             - Path=/reservations/** 
         - id: message
-          uri: http://message:8084
+          uri: http://message:8080
           predicates:
             - Path=/messages/** 
         - id: viewpage
-          uri: http://viewpage:8085
+          uri: http://viewpage:8080
           predicates:
             - Path= /storageviews/**
       globalcors:
