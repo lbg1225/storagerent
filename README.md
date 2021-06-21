@@ -142,7 +142,7 @@
         - 등록시>StorageSelected, 예약시>Resevationindormed :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
 
 ### 액터, 커맨드 부착하여 읽기 좋게
-![image](https://user-images.githubusercontent.com/15603058/119298993-113a8c80-bc99-11eb-9bae-4b911317d810.png)
+![image](https://user-images.githubusercontent.com/84304023/122713526-c6646280-d2a0-11eb-97d3-04d04314ccde.png)
 
 ### 어그리게잇으로 묶기
 ![image](https://user-images.githubusercontent.com/15603058/119299589-2663eb00-bc9a-11eb-83b9-de7f3efe7548.png)
