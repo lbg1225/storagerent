@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: username/payment:latest
+          image: 740569282574.dkr.ecr.ap-northeast-1.amazonaws.com/payment:v1
           ports:
             - containerPort: 8080
           readinessProbe:
