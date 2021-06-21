@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/15603058/119284989-fefe2580-bc7b-11eb-99ca-7a9e4183c16f.jpg)
+![image](https://user-images.githubusercontent.com/84304043/122700755-d66f4880-d286-11eb-8475-dd96f04dcd05.png)
 
 # 창고예약(StorageRent)-2조
 
