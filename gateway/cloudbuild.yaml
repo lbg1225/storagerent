@@ -15,7 +15,7 @@ steps:
       - |
         echo '$COMMIT_SHA =' $COMMIT_SHA
         docker build -t gcr.io/$PROJECT_ID/$_PROJECT_NAME:$COMMIT_SHA .
-  ### Test
+  ### Test test
   ### Publish
   - id: 'publish'
     name: 'gcr.io/cloud-builders/docker'
