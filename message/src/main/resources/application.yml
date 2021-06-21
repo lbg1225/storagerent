@@ -62,3 +62,18 @@ spring:
         event-out:
           destination: storagerent
           contentType: application/json
+feign:
+
+  httpclient:
+    connection-timeout: 1
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        loggerLevel: BASIC
+
+hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 600
