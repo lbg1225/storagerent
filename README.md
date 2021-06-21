@@ -1,6 +1,6 @@
-![image](https://user-images.githubusercontent.com/84304043/122700755-d66f4880-d286-11eb-8475-dd96f04dcd05.png)
+![image](https://user-images.githubusercontent.com/84304043/122708383-07f01000-d297-11eb-8352-20f9f9ce6b81.png)
 
-# 창고예약(StorageRent)-2조
+# 창고대여(StorageRent)-2조
 
 본 예제는 MSA/DDD/Event Storming/EDA 를 포괄하는 분석/설계/구현/운영 전단계를 커버하도록 구성한 예제입니다.
 이는 클라우드 네이티브 애플리케이션의 개발에 요구되는 체크포인트들을 통과하기 위한 예시 답안을 포함합니다.
