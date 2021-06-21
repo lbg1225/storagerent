@@ -499,10 +499,10 @@ public interface StorageRepository extends PagingAndSortingRepository<Storage, L
 - 적용 후 REST API 의 테스트
 ```
 # storage 서비스의 storage 등록
-http POST http://localhost:8088/storages desc="Beautiful House"  
-
+http POST http://localhost:8088/storages description="storage1" price=200000 storageStatus="available"
+  
 # reservation 서비스의 예약 요청
-http POST http://localhost:8088/reservations storageId=1 status=reqReserve
+http POST localhost:8088/reservations storageId=1 price=200000
 
 # reservation 서비스의 예약 상태 확인
 http GET http://localhost:8088/reservations
