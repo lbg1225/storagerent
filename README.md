@@ -788,12 +788,12 @@ codebuild 프로젝트 및 빌드 이력
 * 서킷 브레이킹: Hystrix 사용하여 구현함
 
 시나리오는 예약(reservation)--> 창고(storage) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리.
+
 ![image](https://user-images.githubusercontent.com/84304043/122866912-b6618700-d363-11eb-8247-dae264aa6fdf.png)
 
 
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-
-siege 실행 하였으나 storagerent 부하가 생성되지 않음.
+- siege 실행 하였으나 storagerent 부하가 생성되지 않음.
 
 ```
 kubectl run siege --image=apexacme/siege-nginx -n storagerent
