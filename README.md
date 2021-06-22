@@ -771,7 +771,7 @@ buildspec.yml 파일
 codebuild 프로젝트 및 빌드 이력
 ```
 ![image](https://user-images.githubusercontent.com/84304043/122846416-bdc36900-d340-11eb-9558-cad08d2615f2.png)
-![codebuild(로그)](https://user-images.githubusercontent.com/38099203/119283850-30c1bd00-bc79-11eb-9547-1ff1f62e48a4.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122861596-a2fdee00-d35a-11eb-9d73-7ff537c9e332.png)
 
 - codebuild 빌드 내역 (Message 서비스 세부)
 
