@@ -874,18 +874,17 @@ kubectl delete destinationrules dr-storage -n storagerent
 kubectl delete hpa storage -n storagerent
 ```
 
-- seige 로 배포작업 직전에 워크로드를 모니터링 함.
+- seige 로 배포작업 직전에 워크로드를 모니터링 함(에러발생)
 ```
 siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
-
 ```
 
-- 새버전으로의 배포 시작
+- 새버전으로의 배포 시작(X)
 ```
 kubectl set image ...
 ```
 
-- seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
+- seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인(X)
 
 ```
 siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
@@ -904,10 +903,7 @@ siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080
 kubectl apply -f kubernetes/deployment.yml
 ```
 
-- 동일한 시나리오로 재배포 한 후 Availability 확인:
-
-
-배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
+- 동일한 시나리오로 재배포 한 후 Availability 확인(X)
 
 
 # Self-healing (Liveness Probe)
@@ -919,276 +915,5 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 ```
 ![image](https://user-images.githubusercontent.com/84304043/122863309-80210900-d35d-11eb-8e07-8113c4ca6af9.png)
 
-- kubectl describe pod storage -n storagerent 실행으로 확인
-```
-컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
-pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
-```
-
-# Config Map/ Persistence Volume
-- Persistence Volume
-
-1: EFS 생성
-```
-EFS 생성 시 클러스터의 VPC를 선택해야함
-```
-![클러스터의 VPC를 선택해야함](https://user-images.githubusercontent.com/38099203/119364089-85048580-bce9-11eb-8001-1c20a93b8e36.PNG)
-
-![EFS생성](https://user-images.githubusercontent.com/38099203/119343415-60041880-bcd1-11eb-9c25-1695c858f6aa.PNG)
-
-2. EFS 계정 생성 및 ROLE 바인딩
-```
-kubectl apply -f efs-sa.yml
-
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: efs-provisioner
-  namespace: storagerent
-
-
-kubectl get ServiceAccount efs-provisioner -n airbnb
-NAME              SECRETS   AGE
-efs-provisioner   1         9m1s  
-  
-  
-  
-kubectl apply -f efs-rbac.yaml
-
-namespace를 반드시 수정해야함
-
-  
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: efs-provisioner-runner
-  namespace: storagerent
-rules:
-  - apiGroups: [""]
-    resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["create", "update", "patch"]
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: run-efs-provisioner
-  namespace: storagerent
-subjects:
-  - kind: ServiceAccount
-    name: efs-provisioner
-     # replace with namespace where provisioner is deployed
-    namespace: storagerent
-roleRef:
-  kind: ClusterRole
-  name: efs-provisioner-runner
-  apiGroup: rbac.authorization.k8s.io
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: leader-locking-efs-provisioner
-  namespace: storagerent
-rules:
-  - apiGroups: [""]
-    resources: ["endpoints"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: leader-locking-efs-provisioner
-  namespace: storagerent
-subjects:
-  - kind: ServiceAccount
-    name: efs-provisioner
-    # replace with namespace where provisioner is deployed
-    namespace: storagerent
-roleRef:
-  kind: Role
-  name: leader-locking-efs-provisioner
-  apiGroup: rbac.authorization.k8s.io
-
-
-```
-
-3. EFS Provisioner 배포
-```
-kubectl apply -f efs-provisioner-deploy.yml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: efs-provisioner
-  namespace: storagerent
-spec:
-  replicas: 1
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app: efs-provisioner
-  template:
-    metadata:
-      labels:
-        app: efs-provisioner
-    spec:
-      serviceAccount: efs-provisioner
-      containers:
-        - name: efs-provisioner
-          image: quay.io/external_storage/efs-provisioner:latest
-          env:
-            - name: FILE_SYSTEM_ID
-              value: fs-562f9c36
-            - name: AWS_REGION
-              value: ap-northeast-2
-            - name: PROVISIONER_NAME
-              value: my-aws.com/aws-efs
-          volumeMounts:
-            - name: pv-volume
-              mountPath: /persistentvolumes
-      volumes:
-        - name: pv-volume
-          nfs:
-            server: fs-562f9c36.efs.ap-northeast-2.amazonaws.com
-            path: /
-
-
-kubectl get Deployment efs-provisioner -n airbnb
-NAME              READY   UP-TO-DATE   AVAILABLE   AGE
-efs-provisioner   1/1     1            1           11m
-
-```
-
-4. 설치한 Provisioner를 storageclass에 등록
-```
-kubectl apply -f efs-storageclass.yml
-
-
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: aws-efs
-  namespace: storagerent
-provisioner: my-aws.com/aws-efs
-
-
-kubectl get sc aws-efs -n storagerent
-NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-aws-efs         my-aws.com/aws-efs      Delete          Immediate              false                  4s
-```
-
-5. PVC(PersistentVolumeClaim) 생성
-```
-kubectl apply -f volume-pvc.yml
-
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: aws-efs
-  namespace: storagerent
-  labels:
-    app: test-pvc
-spec:
-  accessModes:
-  - ReadWriteMany
-  resources:
-    requests:
-      storage: 6Ki
-  storageClassName: aws-efs
-  
-  
-kubectl get pvc aws-efs -n storagerent
-NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-aws-efs   Bound    pvc-43f6fe12-b9f3-400c-ba20-b357c1639f00   6Ki        RWX            aws-efs        4m44s
-```
-
-6. storage pod 적용
-```
-kubectl apply -f deployment.yml
-```
-![pod with pvc](https://user-images.githubusercontent.com/38099203/119349966-bd9c6300-bcd9-11eb-9f6d-08e4a3ec82f0.PNG)
-
-
-7. A pod에서 마운트된 경로에 파일을 생성하고 B pod에서 파일을 확인함
-```
-NAME                              READY   STATUS    RESTARTS   AGE
-efs-provisioner-f4f7b5d64-lt7rz   1/1     Running   0          14m
-storage-5df66d6674-n6b7n             1/1     Running   0          109s
-storage-5df66d6674-pl25l             1/1     Running   0          109s
-siege                             1/1     Running   0          2d1h
-
-
-kubectl exec -it pod/storage-5df66d6674-n6b7n storage -n storagerent -- /bin/sh
-/ # cd /mnt/aws
-/mnt/aws # touch intensive_course_work
-```
-![a pod에서 파일생성](https://user-images.githubusercontent.com/38099203/119372712-9736f180-bcf2-11eb-8e57-1d6e3f4273a5.PNG)
-
-```
-kubectl exec -it pod/storage-5df66d6674-pl25l storage -n storagerent -- /bin/sh
-/ # cd /mnt/aws
-/mnt/aws # ls -al
-total 8
-drwxrws--x    2 root     2000          6144 May 24 15:44 .
-drwxr-xr-x    1 root     root            17 May 24 15:42 ..
--rw-r--r--    1 root     2000             0 May 24 15:44 intensive_course_work
-```
-![b pod에서 파일생성 확인](https://user-images.githubusercontent.com/38099203/119373196-204e2880-bcf3-11eb-88f0-a1e91a89088a.PNG)
-
-
-- Config Map
-
-1: cofingmap.yml 파일 생성
-```
-kubectl apply -f cofingmap.yml
-
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: storagerent-config
-  namespace: storagerent
-data:
-  # 단일 key-value
-  max_reservation_per_person: "10"
-  ui_properties_file_name: "user-interface.properties"
-```
-
-2. deployment.yml에 적용하기
-
-```
-kubectl apply -f deployment.yml
-
-
-.......
-          env:
-			# cofingmap에 있는 단일 key-value
-            - name: MAX_RESERVATION_PER_PERSION
-              valueFrom:
-                configMapKeyRef:
-                  name: storagerent-config
-                  key: max_reservation_per_person
-           - name: UI_PROPERTIES_FILE_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: storagerent-config
-                  key: ui_properties_file_name
-          volumeMounts:
-          - mountPath: "/mnt/aws"
-            name: volume
-      volumes:
-        - name: volume
-          persistentVolumeClaim:
-            claimName: aws-efs
-```
+- kubectl describe pod storage -n storagerent 실행으로 확인(X)
 
