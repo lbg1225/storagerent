@@ -127,7 +127,7 @@
 
 
 ## Event Storming 결과
-* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/QtpQtDiH1Je3wad2QxZUJVvnLzO2/share/6f36e16efdf8c872da3855fedf7f3ea9
+* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/2JEsE4KtipYy9F381lCC7sUjsks1/every/2b0c3bb2d0aa2ac1adcb24844b1ad182
 
 
 ### 이벤트 도출
