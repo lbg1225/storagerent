@@ -785,7 +785,7 @@ codebuild 프로젝트 및 빌드 이력
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
-* 서킷 브레이킹 프레임워크의 선택: istio 사용하여 구현함
+* 서킷 브레이킹: Hystrix 사용하여 구현함
 
 시나리오는 예약(reservation)--> 창고(storage) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리.
 
@@ -812,31 +812,19 @@ spec:
 #      maxEjectionPercent: 100
 ```
 
-* istio-injection 활성화 및 storage pod container 확인
-
-```
-kubectl get ns -L istio-injection
-kubectl label namespace airbnb istio-injection=enabled 
-```
-
-![Circuit Breaker(istio-enjection)](https://user-images.githubusercontent.com/38099203/119295450-d6812600-bc91-11eb-8aad-46eeac968a41.PNG)
-
-![Circuit Breaker(pod)](https://user-images.githubusercontent.com/38099203/119295568-0cbea580-bc92-11eb-9d2b-8580f3576b47.PNG)
-
 
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 
 siege 실행
 
 ```
-kubectl run siege --image=apexacme/siege-nginx -n airbnb
-kubectl exec -it siege -c siege -n airbnb -- /bin/bash
+kubectl run siege --image=apexacme/siege-nginx -n storagerent
+kubectl exec -it siege -c siege -n storagerent -- /bin/bash
 ```
-
 
 - 동시사용자 1로 부하 생성 시 모두 정상
 ```
-siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
+siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
@@ -862,27 +850,27 @@ siege -c2 -t10S -v --content-type "application/json" 'http://storage:8080/storag
 ** SIEGE 4.0.4
 ** Preparing 2 concurrent users for battle.
 The server is now under siege...
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.10 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.04 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.05 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.22 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.08 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.07 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.00 secs:      81 bytes ==> POST http://room:8080/rooms
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 503     0.10 secs:      81 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.04 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.05 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.22 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.08 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.07 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 503     0.00 secs:      81 bytes ==> POST http://storage:8080/storages
 
 Lifting the server siege...
 Transactions:                   1904 hits
@@ -899,10 +887,6 @@ Longest transaction:            0.03
 Shortest transaction:           0.00
 ```
 
-- kiali 화면에 서킷 브레이크 확인
-
-![Circuit Breaker(kiali)](https://user-images.githubusercontent.com/38099203/119298194-7f7e4f80-bc97-11eb-8447-678eece29e5c.PNG)
-
 
 - 다시 최소 Connection pool로 부하 다시 정상 확인
 
@@ -910,22 +894,22 @@ Shortest transaction:           0.00
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
 The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
 
 :
 :
@@ -958,17 +942,17 @@ Shortest transaction:           0.00
 
 - storage 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
-kubectl autoscale deployment storage -n airbnb --cpu-percent=50 --min=1 --max=10
+kubectl autoscale deployment storage -n storagerent --cpu-percent=50 --min=1 --max=10
 ```
 ![Autoscale (HPA)(kubectl autoscale 명령어)](https://user-images.githubusercontent.com/38099203/119299474-ec92e480-bc99-11eb-9bc3-8c5246b02783.PNG)
 
 - 부하를 동시사용자 100명, 1분 동안 걸어준다.
 ```
-siege -c100 -t60S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 ```
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 ```
-kubectl get deploy storage -w -n airbnb 
+kubectl get deploy storage -w -n storagerent 
 ```
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ![Autoscale (HPA)(모니터링)](https://user-images.githubusercontent.com/38099203/119299704-6a56f000-bc9a-11eb-9ba8-55e5978f3739.PNG)
@@ -995,26 +979,25 @@ Shortest transaction:           0.01
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
 
 ```
-kubectl delete destinationrules dr-storage -n airbnb
-kubectl label namespace airbnb istio-injection-
-kubectl delete hpa storage -n airbnb
+kubectl delete destinationrules dr-storage -n storagerent
+kubectl delete hpa storage -n storagerent
 ```
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 
 ** SIEGE 4.0.4
 ** Preparing 1 concurrent users for battle.
 The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
+HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
 
 ```
 
@@ -1026,7 +1009,7 @@ kubectl set image ...
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
+siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 
 
 Transactions:                   7732 hits
@@ -1049,7 +1032,8 @@ Shortest transaction:           0.00
 # deployment.yaml 의 readiness probe 의 설정:
 ```
 
-![probe설정](https://user-images.githubusercontent.com/38099203/119301424-71333200-bc9d-11eb-9f75-f8c98fce70a3.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122858339-156bcf80-d355-11eb-9d1a-91da438ac905.png)
+
 
 ```
 kubectl apply -f kubernetes/deployment.yml
@@ -1085,7 +1069,7 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 ```
 ![deployment yml tmp healthy](https://user-images.githubusercontent.com/38099203/119318677-8ff0f300-bcb4-11eb-950a-e3c15feed325.PNG)
 
-- kubectl describe pod storage -n airbnb 실행으로 확인
+- kubectl describe pod storage -n storagerent 실행으로 확인
 ```
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
