@@ -798,7 +798,6 @@ codebuild 프로젝트 및 빌드 이력
 kubectl run siege --image=apexacme/siege-nginx -n storagerent
 kubectl exec -it siege -c siege -n storagerent -- /bin/bash
 ```
-- siege 실행 하였으나 storagerent 부하가 생성되지 않아 부하 테스트 하지 못함
 - Jmeter 로 부하 테스트 하였으나 실패건이 3%로 나오는것확인 -> 하지만 Jmeter 테스트와 연결해서 CB결과를 보여줘야할지 모르겠음.
 
 ![image](https://user-images.githubusercontent.com/84304043/122867174-10fae300-d364-11eb-8ab4-a2dbc6395f75.png)
