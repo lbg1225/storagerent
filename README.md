@@ -816,22 +816,22 @@ kubectl exec -it siege -c siege -n storagerent -- /bin/bash
 
 ![image](https://user-images.githubusercontent.com/84304043/122850814-d6378180-d348-11eb-9cd2-eb0873f1c8d7.png)
 
-- storage 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다:
+- storage 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다. (X, 오류 발생)
 ```
 kubectl autoscale deployment storage -n storagerent --cpu-percent=50 --min=1 --max=10
 ```
 
-- 부하를 동시사용자 100명, 1분 동안 걸어준다.
+- 부하를 동시사용자 100명, 1분 동안 걸어준다.(X)
 ```
 siege -c100 -t60S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 ```
-- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
+- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다 (X)
 ```
 kubectl get deploy storage -w -n storagerent 
 ```
-- 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
+- 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:(X)
 
-- siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
+- siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. (X)
 
 
 ## 무정지 재배포
