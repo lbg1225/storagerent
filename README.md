@@ -724,8 +724,17 @@ http GET http://localhost:8088/reservations/2
 
 ```
 ## 폴리그랏 퍼시스턴스 적용
+```
+Message Sevices : hsqldb사용
+```
+![image](https://user-images.githubusercontent.com/84304043/122845081-dda55d80-d33d-11eb-8d9f-a4e17735574e.png)
+```
+Message이외  Sevices : h2db사용
+```
+![image](https://user-images.githubusercontent.com/84304043/122845106-ed24a680-d33d-11eb-9124-aed5d9e7285b.png)
 
-## Maven 빌드시스템 라이브러리 추가( pom.xml 설정변경 H2DB  HSQLDB) 
+## Maven 빌드시스템 라이브러리 추가( pom.xml 설정변경 H2DB → HSQLDB) 
+![image](https://user-images.githubusercontent.com/84304043/122845179-0fb6bf80-d33e-11eb-879a-1e6e8964ebb3.png)
 
 # 운영
 
@@ -739,12 +748,12 @@ http GET http://localhost:8088/reservations/2
 SA 생성
 kubectl apply -f eks-admin-service-account.yml
 ```
-![codebuild(sa)](https://user-images.githubusercontent.com/38099203/119293259-ff52ec80-bc8c-11eb-8671-b9a226811762.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122844500-c154f100-d33c-11eb-9ec0-5eb0fa3540d6.png)
 ```
 Role 생성
 kubectl apply -f eks-admin-cluster-role-binding.yml
 ```
-![codebuild(role)](https://user-images.githubusercontent.com/38099203/119293300-1abdf780-bc8d-11eb-9b07-ad173237efb1.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122844538-d6ca1b00-d33c-11eb-818b-5a51404265c1.png)
 ```
 Token 확인
 kubectl -n kube-system get secret
@@ -755,7 +764,7 @@ kubectl -n kube-system describe secret eks-admin-token-rjpmq
 buildspec.yml 파일 
 마이크로 서비스 storage의 yml 파일 이용하도록 세팅
 ```
-![codebuild(buildspec)](https://user-images.githubusercontent.com/38099203/119283849-30292680-bc79-11eb-9f86-cbb715e74846.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122844673-201a6a80-d33d-11eb-8a52-a0fad02951d9.png)
 
 - codebuild 실행
 ```
