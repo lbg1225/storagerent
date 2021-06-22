@@ -792,28 +792,17 @@ codebuild 프로젝트 및 빌드 이력
 ![image](https://user-images.githubusercontent.com/84304043/122866912-b6618700-d363-11eb-8247-dae264aa6fdf.png)
 
 
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- siege 실행 하였으나 storagerent 부하가 생성되지 않음.
+* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: siege 실행 하였으나 storagerent 부하가 생성되지 않음.
 
 ```
 kubectl run siege --image=apexacme/siege-nginx -n storagerent
 kubectl exec -it siege -c siege -n storagerent -- /bin/bash
 ```
+- siege 실행 하였으나 storagerent 부하가 생성되지 않아 부하 테스트 하지 못함
+- Jmeter 로 부하 테스트 하였으나 실패건이 3%로 나오는것확인 -> 하지만 Jmeter 테스트와 연결해서 CB결과를 보여줘야할지 모르겠음.
 
-- 동시사용자 1로 부하 생성 시 모두 정상
-```
-siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
-```
-
-- 동시사용자 2로 부하 생성 시 503 에러 168개 발생
-```
-siege -c2 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
-```
-
-- 다시 최소 Connection pool로 부하 다시 정상 확인
-
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌.
-  virtualhost 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
+![image](https://user-images.githubusercontent.com/84304043/122867174-10fae300-d364-11eb-8ab4-a2dbc6395f75.png)
+![image](https://user-images.githubusercontent.com/84304043/122867281-31c33880-d364-11eb-9854-587ebade3a5b.png)
 
 
 ### 오토스케일 아웃
