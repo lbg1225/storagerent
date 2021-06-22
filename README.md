@@ -797,7 +797,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: dr-storage
-  namespace: airbnb
+  namespace: storagerent
 spec:
   host: storage
   trafficPolicy:
@@ -944,7 +944,6 @@ Shortest transaction:           0.00
 ```
 kubectl autoscale deployment storage -n storagerent --cpu-percent=50 --min=1 --max=10
 ```
-![Autoscale (HPA)(kubectl autoscale 명령어)](https://user-images.githubusercontent.com/38099203/119299474-ec92e480-bc99-11eb-9bc3-8c5246b02783.PNG)
 
 - 부하를 동시사용자 100명, 1분 동안 걸어준다.
 ```
@@ -955,7 +954,6 @@ siege -c100 -t60S -v --content-type "application/json" 'http://storage:8080/stor
 kubectl get deploy storage -w -n storagerent 
 ```
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-![Autoscale (HPA)(모니터링)](https://user-images.githubusercontent.com/38099203/119299704-6a56f000-bc9a-11eb-9ba8-55e5978f3739.PNG)
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
 ```
@@ -1067,16 +1065,13 @@ Shortest transaction:           0.00
 90초 후 삭제
 livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 ```
-![deployment yml tmp healthy](https://user-images.githubusercontent.com/38099203/119318677-8ff0f300-bcb4-11eb-950a-e3c15feed325.PNG)
+![image](https://user-images.githubusercontent.com/84304043/122863309-80210900-d35d-11eb-8e07-8113c4ca6af9.png)
 
 - kubectl describe pod storage -n storagerent 실행으로 확인
 ```
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
 ```
-
-![get pod tmp healthy](https://user-images.githubusercontent.com/38099203/119318781-a9923a80-bcb4-11eb-9783-65051ec0d6e8.PNG)
-![touch tmp healthy](https://user-images.githubusercontent.com/38099203/119319050-f118c680-bcb4-11eb-8bca-aa135c1e067e.PNG)
 
 # Config Map/ Persistence Volume
 - Persistence Volume
