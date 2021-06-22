@@ -788,34 +788,12 @@ codebuild 프로젝트 및 빌드 이력
 * 서킷 브레이킹: Hystrix 사용하여 구현함
 
 시나리오는 예약(reservation)--> 창고(storage) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리.
-
-- DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 설정
-최소 connection pool 설정
-```
-# destination-rule.yml
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: dr-storage
-  namespace: storagerent
-spec:
-  host: storage
-  trafficPolicy:
-    connectionPool:
-      http:
-        http1MaxPendingRequests: 1
-        maxRequestsPerConnection: 1
-#    outlierDetection:
-#      interval: 1s
-#      consecutiveErrors: 1
-#      baseEjectionTime: 10s
-#      maxEjectionPercent: 100
-```
+![image](https://user-images.githubusercontent.com/84304043/122866912-b6618700-d363-11eb-8247-dae264aa6fdf.png)
 
 
 * 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
 
-siege 실행
+siege 실행 하였으나 storagerent 부하가 생성되지 않음.
 
 ```
 kubectl run siege --image=apexacme/siege-nginx -n storagerent
@@ -832,9 +810,7 @@ siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storag
 siege -c2 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
 ```
 
-
 - 다시 최소 Connection pool로 부하 다시 정상 확인
-
 
 - 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌.
   virtualhost 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
