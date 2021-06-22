@@ -825,110 +825,16 @@ kubectl exec -it siege -c siege -n storagerent -- /bin/bash
 - 동시사용자 1로 부하 생성 시 모두 정상
 ```
 siege -c1 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
-
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.49 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.05 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     256 bytes ==> POST http://storage:8080/storages
 ```
 
 - 동시사용자 2로 부하 생성 시 503 에러 168개 발생
 ```
 siege -c2 -t10S -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "Beautiful House3"}'
-
-** SIEGE 4.0.4
-** Preparing 2 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 503     0.10 secs:      81 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.04 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.05 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.22 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.08 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.07 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 503     0.00 secs:      81 bytes ==> POST http://storage:8080/storages
-
-Lifting the server siege...
-Transactions:                   1904 hits
-Availability:                  91.89 %
-Elapsed time:                   9.89 secs
-Data transferred:               0.48 MB
-Response time:                  0.01 secs
-Transaction rate:             192.52 trans/sec
-Throughput:                     0.05 MB/sec
-Concurrency:                    1.98
-Successful transactions:        1904
-Failed transactions:             168
-Longest transaction:            0.03
-Shortest transaction:           0.00
 ```
 
 
 - 다시 최소 Connection pool로 부하 다시 정상 확인
 
-```
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storages
-
-:
-:
-
-Lifting the server siege...
-Transactions:                   1139 hits
-Availability:                 100.00 %
-Elapsed time:                   9.19 secs
-Data transferred:               0.28 MB
-Response time:                  0.01 secs
-Transaction rate:             123.94 trans/sec
-Throughput:                     0.03 MB/sec
-Concurrency:                    0.98
-Successful transactions:        1139
-Failed transactions:               0
-Longest transaction:            0.04
-Shortest transaction:           0.00
-
-```
 
 - 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌.
   virtualhost 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
@@ -957,21 +863,7 @@ kubectl get deploy storage -w -n storagerent
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
-```
-Lifting the server siege...
-Transactions:                  15615 hits
-Availability:                 100.00 %
-Elapsed time:                  59.44 secs
-Data transferred:               3.90 MB
-Response time:                  0.32 secs
-Transaction rate:             262.70 trans/sec
-Throughput:                     0.07 MB/sec
-Concurrency:                   85.04
-Successful transactions:       15675
-Failed transactions:               0
-Longest transaction:            2.55
-Shortest transaction:           0.01
-```
+
 
 ## 무정지 재배포
 
@@ -986,18 +878,6 @@ kubectl delete hpa storage -n storagerent
 ```
 siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
 
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://storage:8080/storags
-
 ```
 
 - 새버전으로의 배포 시작
@@ -1009,22 +889,8 @@ kubectl set image ...
 
 ```
 siege -c100 -t60S -r10 -v --content-type "application/json" 'http://storage:8080/storages POST {"desc": "BigStorage"}'
-
-
-Transactions:                   7732 hits
-Availability:                  87.32 %
-Elapsed time:                  17.12 secs
-Data transferred:               1.93 MB
-Response time:                  0.18 secs
-Transaction rate:             451.64 trans/sec
-Throughput:                     0.11 MB/sec
-Concurrency:                   81.21
-Successful transactions:        7732
-Failed transactions:            1123
-Longest transaction:            0.94
-Shortest transaction:           0.00
-
 ```
+
 - 배포기간중 Availability 가 평소 100%에서 87% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함
 
 ```
@@ -1039,22 +905,7 @@ kubectl apply -f kubernetes/deployment.yml
 ```
 
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
-```
-Lifting the server siege...
-Transactions:                  27657 hits
-Availability:                 100.00 %
-Elapsed time:                  59.41 secs
-Data transferred:               6.91 MB
-Response time:                  0.21 secs
-Transaction rate:             465.53 trans/sec
-Throughput:                     0.12 MB/sec
-Concurrency:                   99.60
-Successful transactions:       27657
-Failed transactions:               0
-Longest transaction:            1.20
-Shortest transaction:           0.00
 
-```
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
