@@ -376,35 +376,50 @@
 예약건의 취소를 수행하면 다시 연관된 창고(Storage), 결제(Payment) 등의 서비스의 상태값 등의 데이터가 적당한 상태로 변경되는 것을
 확인할 수 있습니다.
 
-창고등록
+- 창고등록
 ```
 http POST http://localhost:8088/storages description="BigStorage" price=200000 storageStatus="available"
 ```  
 ![image](https://user-images.githubusercontent.com/84304043/122844125-eb59e380-d33b-11eb-9a85-1a892021ca0d.png)
-예약등록
+- 예약등록
 ```
 http POST localhost:8088/reservations storageId=1 price=200000 reservationStatus="reqReserve"
 ```  
 ![image](https://user-images.githubusercontent.com/84304043/122843690-0415c980-d33b-11eb-9558-c423faa1bd42.png)
-예약 후 - 창고 상태
+- 예약 후 - 창고 상태
 ```
 http GET http://localhost:8088/storages/1
 ```  
 ![image](https://user-images.githubusercontent.com/84304043/122843724-1d1e7a80-d33b-11eb-8a52-8b7f772df2e3.png)
-예약 후 - 예약 상태
+- 예약 후 - 예약 상태
 ```
 http GET http://localhost:8088/reservations/1
 ```  
 ![image](https://user-images.githubusercontent.com/84304043/122843763-31fb0e00-d33b-11eb-83f6-140191ec1a6d.png)
-예약 후 - 결제 상태
+- 예약 후 - 결제 상태
+```
+http GET http://localhost:8088/payments/1
+``` 
 ![image](https://user-images.githubusercontent.com/84304043/122843798-43441a80-d33b-11eb-92c4-160c77f6f3ef.png)
-예약 취소
+- 예약 취소
+```
+http PATCH localhost:8088/reservations/1 storageId=1 price=200000 reservationStatus="reqCancel"
+``` 
 ![image](https://user-images.githubusercontent.com/84304043/122843840-57881780-d33b-11eb-88fe-61d8055ff1e0.png)
-취소 후 - 창고 상태
+- 예약 취소 후 - 창고 상태
+```
+http GET http://localhost:8088/storages/1
+``` 
 ![image](https://user-images.githubusercontent.com/84304043/122843892-6ec70500-d33b-11eb-9663-e4c894dff60b.png)
-취소 후 - 예약 상태
+- 예약 취소 후 - 예약 상태
+```
+http GET http://localhost:8088/reservations/1
+``` 
 ![image](https://user-images.githubusercontent.com/84304043/122843932-856d5c00-d33b-11eb-88a9-921c14d97ed0.png)
-취소 후 - 결제 상태
+- 예약 취소 후 - 결제 상태
+```
+http GET http://localhost:8088/payments/1
+``` 
 ![image](https://user-images.githubusercontent.com/84304043/122843963-95853b80-d33b-11eb-8e0a-4831fa73a5b4.png)
 
 
